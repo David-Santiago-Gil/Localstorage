@@ -1,0 +1,145 @@
+/* Variables de Estilo del Usuario */
+:root {
+    --color-bg-oscuro: #111111; /* Fondo principal */
+    --color-bg-contenedor: #000000; /* Fondo de secciones principales */
+    --color-form-fondo: #222222; /* Fondo de inputs/formulario */
+    --color-neon: #ff073a; /* Rojo Puro Final (Color de Acento) */
+    --color-texto-claro: #E0E0E0;
+    --color-texto-input: #FFFFFF;
+    --sombra-neon-fuerte: 0 0 5px var(--color-neon), 0 0 10px var(--color-neon);
+    --sombra-neon-suave: 0 0 3px rgba(255, 7, 58, 0.7);
+}
+
+body {
+    font-family: 'Consolas', monospace;
+    background-color: var(--color-bg-oscuro);
+    color: var(--color-texto-claro);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+header {
+    background-color: var(--color-bg-contenedor);
+    color: var(--color-neon);
+    padding: 20px 0;
+    text-align: center;
+    border-bottom: 2px solid var(--color-neon);
+    box-shadow: 0 0 15px var(--sombra-neon-suave);
+}
+
+main {
+    flex-grow: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+h1, h2, h3 {
+    color: var(--color-neon);
+    text-shadow: 0 0 8px var(--sombra-neon-suave);
+}
+
+.registro-usuario, .resultado {
+    background-color: var(--color-form-fondo); /* Usamos el fondo del formulario */
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 0 20px var(--sombra-neon-suave);
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid var(--color-neon);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--color-neon);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--color-neon);
+    background-color: var(--color-bg-oscuro); /* Un fondo muy oscuro para los inputs */
+    color: var(--color-texto-input);
+    border-radius: 5px;
+    box-sizing: border-box;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus {
+    border-color: #ff3d61; 
+    box-shadow: 0 0 8px var(--color-neon);
+    outline: none;
+}
+
+.error {
+    color: var(--color-neon); /* El error también usa el rojo neón */
+    font-size: 0.9em;
+    height: 1.2em;
+    margin-top: 5px;
+    text-shadow: 0 0 2px rgba(255, 7, 58, 0.5);
+}
+
+.botones-contenedor { 
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 25px;
+}
+
+button {
+    background-color: var(--color-neon);
+    color: var(--color-bg-contenedor); /* Texto negro en el botón neón */
+    border: none;
+    padding: 12px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+    letter-spacing: 0.5px;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.2s;
+    box-shadow: 0 0 5px var(--color-neon);
+}
+
+button:hover {
+    background-color: #ff3d61;
+    box-shadow: var(--sombra-neon-fuerte);
+    transform: translateY(-2px);
+}
+
+.resultado p {
+    margin: 10px 0;
+    padding: 8px;
+    border-bottom: 1px dashed var(--color-neon);
+}
+
+.resultado strong {
+    color: var(--color-neon);
+}
+
+/* Clase para ocultar elementos */
+.hidden {
+    display: none;
+}
+
+footer {
+    background-color: var(--color-bg-contenedor);
+    color: var(--color-texto-claro);
+    text-align: center;
+    padding: 15px 0;
+    margin-top: auto;
+    border-top: 2px solid var(--color-neon);
+    box-shadow: 0 0 15px var(--sombra-neon-suave);
+}

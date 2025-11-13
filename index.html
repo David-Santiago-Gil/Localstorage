@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Portal de Usuario</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Mini Portal de Usuario</h1>
+    </header>
+
+    <main>
+        <section class="registro-usuario">
+            <h2>Registro de Usuario</h2>
+            
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre">
+                <p class="error" id="error-nombre"></p>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email">
+                <p class="error" id="error-email"></p>
+            </div>
+
+            <div class="form-group">
+                <label for="edad">Edad:</label>
+                <input type="number" id="edad" name="edad" min="1">
+                <p class="error" id="error-edad"></p>
+            </div>
+
+            <div class="botones-contenedor"> <button id="btnGuardar">Guardar</button>
+                <button id="btnVerDatos">Ver Datos</button>
+                <button id="btnLimpiarFormulario">Limpiar Formulario</button>
+                <button id="btnBorrarDatos">Borrar Datos</button>
+            </div>
+        </section>
+
+        <section class="resultado hidden"> <h3>Datos Guardados:</h3>
+            <div id="resultado-datos">
+                <p><strong>Nombre:</strong> <span id="res-nombre"></span></p>
+                <p><strong>Email:</strong> <span id="res-email"></span></p>
+                <p><strong>Edad:</strong> <span id="res-edad"></span></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Mini Portal. Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
