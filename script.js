@@ -54,55 +54,46 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // 3. Funciones de LocalStorage y Lógica
-    
+
+    /**
+     * Función principal para guardar un nuevo usuario.
+     * Incluye la lógica para actualizar la lista visible sin recargar.
+     */
     const guardarDatos = () => {
-        
         const valido = validarCampos();
 
         if (valido) {
-            const nuevoUsuario = {
+            const usuario = {
                 nombre: inputNombre.value.trim(),
-                email: inputEmail.value.trim(), // Usamos el email como identificador único
+                email: inputEmail.value.trim(),
                 edad: parseInt(inputEdad.value.trim())
             };
 
             let listaUsuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
             
-            // Buscar si el usuario ya existe por su email
-            const indiceExistente = listaUsuarios.findIndex(
-                usuario => usuario.email === nuevoUsuario.email
-            );
-            
-            if (indiceExistente !== -1) {
-                // 1. USUARIO EXISTE: Actualizar datos (Silencioso)
-                listaUsuarios[indiceExistente] = nuevoUsuario;
-            } else {
-                // 2. USUARIO NO EXISTE: Añadir nuevo (Silencioso)
-                listaUsuarios.push(nuevoUsuario);
-            }
+            // Añadir el nuevo usuario
+            listaUsuarios.push(usuario);
 
-            // Guardar la lista actualizada en LocalStorage
+            // Guardar en LocalStorage
             localStorage.setItem("usuarios", JSON.stringify(listaUsuarios));
             
+            // 1. Mostrar Alerta
+            alert(`✅ Usuario "${usuario.nombre}" guardado correctamente.`);
+            
+            // 2. Limpiar el formulario
             limpiarFormulario(false); // Limpieza silenciosa
             
-            // 3. Refrescar la lista si está visible
+            // 3. Actualizar la lista si está visible (sin refrescar la página)
             if (!seccionResultado.classList.contains('hidden')) {
-                // Forzamos un ciclo de 'refresh': Ocultar y luego Mostrar de nuevo
-                seccionResultado.classList.add('hidden'); 
-                btnVerOcultarDatos.textContent = 'Ver Datos'; 
-                
-                setTimeout(() => {
-                    toggleMostrarDatos();
-                }, 10);
+                 renderizarDatos(); // Volver a pintar la lista con el nuevo dato
             }
-            
+
         } else {
-            // ALERTA RESTAURADA: Cuando la validación falla
-            alert('❌ Por favor, corrige los errores en el formulario.'); 
+            alert('❌ Por favor, corrige los errores en el formulario.');
         }
     };
 
+    // Función CORREGIDA
     const borrarUsuarioIndividual = (index) => {
         const dataString = localStorage.getItem('usuarios');
         if (!dataString) return;
@@ -118,24 +109,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // Guardar la nueva lista en LocalStorage
             localStorage.setItem("usuarios", JSON.stringify(listaUsuarios));
             
-            // Operación de borrado individual: Silenciosa
+            alert(`🗑️ Usuario ${nombreUsuario} borrado correctamente. La lista ha sido reordenada.`);
             
             setTimeout(() => {
-                // Llama a toggleMostrarDatos() para re-renderizar la lista y ajustar el texto del botón.
-                toggleMostrarDatos(); 
+                // Volver a llamar a la función para re-renderizar la lista si está visible.
+                if (!seccionResultado.classList.contains('hidden')) {
+                    renderizarDatos(); 
+                } else {
+                    // Si no está visible, pero la lista quedó vacía, es mejor resetear el estado del botón
+                    if (listaUsuarios.length === 0) {
+                        btnVerOcultarDatos.textContent = 'Ver Datos';
+                    }
+                }
             }, 10); 
         }
     };
 
-    const toggleMostrarDatos = () => {
-        // >>>>> BLOQUE DE OCULTAR (Si ya está visible) <<<<<
-        if (!seccionResultado.classList.contains('hidden')) {
-            seccionResultado.classList.add('hidden');
-            btnVerOcultarDatos.textContent = 'Ver Datos'; // Cambiar a 'Ver Datos'
-            return;
-        }
-
-        // >>>>> BLOQUE DE MOSTRAR (Si está oculto) <<<<<
+    /**
+     * Función para PINTAR/RE-PINTAR la lista de usuarios.
+     * La lista es PINTADA solo si el LocalStorage tiene datos.
+     */
+    const renderizarDatos = () => {
         const dataString = localStorage.getItem('usuarios'); 
         listaUsuariosContenedor.innerHTML = ''; 
 
@@ -173,17 +167,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 
             } else {
+                // Lista vacía, la ocultamos y reseteamos el botón
                 seccionResultado.classList.add('hidden'); 
                 btnVerOcultarDatos.textContent = 'Ver Datos';
-                // ALERTA RESTAURADA: Cuando la lista está vacía
-                alert('La lista de usuarios está vacía.'); 
+                alert('La lista de usuarios está vacía.');
             }
         } else {
+            // No hay datos, la ocultamos y reseteamos el botón
             seccionResultado.classList.add('hidden'); 
             btnVerOcultarDatos.textContent = 'Ver Datos';
-            // ALERTA RESTAURADA: Cuando no hay datos en LocalStorage
-            alert('No se encontró la lista de usuarios en LocalStorage.'); 
+            alert('No se encontró la lista de usuarios en LocalStorage.');
         }
+    };
+
+    /**
+     * Función para alternar la visibilidad de la lista de datos.
+     */
+    const toggleMostrarDatos = () => {
+        // Si la sección ya está visible, la oculta.
+        if (!seccionResultado.classList.contains('hidden')) {
+            seccionResultado.classList.add('hidden');
+            btnVerOcultarDatos.textContent = 'Ver Datos'; // Cambiar a 'Ver Datos'
+            return;
+        }
+        
+        // Si está oculta, llama a renderizarDatos para pintarla y mostrarla.
+        renderizarDatos();
     };
 
     const limpiarFormulario = (mostrarAlerta = true) => {
@@ -203,8 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             debeLimpiar = !(nombreVacio && emailVacio && edadVacia && erroresVacios);
     
             if (!debeLimpiar) {
-                // ALERTA RESTAURADA: Cuando no hay nada que limpiar
-                alert('❕ No hay nada para limpiar.'); 
+                alert('❕ No hay nada para limpiar.');
                 return;
             }
         } else {
@@ -222,34 +230,32 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 3. Mostrar alerta solo si se solicitó (y si realmente había algo que limpiar)
         if (mostrarAlerta && debeLimpiar) {
-            // Limpieza del formulario: Silenciosa
+            alert('🧹 Formulario limpiado correctamente.');
         }
     };
 
     const borrarDatos = () => {
-        // Ocultar la sección de resultados inmediatamente
-        listaUsuariosContenedor.innerHTML = ''; 
-        seccionResultado.classList.add('hidden'); 
-        btnVerOcultarDatos.textContent = 'Ver Datos'; // Resetear el botón
-
         const dataString = localStorage.getItem('usuarios');
     
         if (!dataString || JSON.parse(dataString).length === 0) {
-            // ALERTA RESTAURADA: Cuando no hay datos para borrar
-            alert('❌ No hay datos para borrar.'); 
+            alert('❌ No hay datos para borrar.');
             return; 
         }
         
         // Si hay datos, procede a borrar
         localStorage.removeItem('usuarios'); 
-        // Borrado total de datos: Silencioso
+        alert('🗑️ Lista de usuarios borrada de LocalStorage.');
+        
+        // Ocultar la sección de resultados inmediatamente
+        listaUsuariosContenedor.innerHTML = ''; 
+        seccionResultado.classList.add('hidden'); 
+        btnVerOcultarDatos.textContent = 'Ver Datos'; // Resetear el botón
     };
 
     // 4. Asignación de Eventos
     btnGuardar.addEventListener('click', guardarDatos);
+    // Ahora btnVerOcultarDatos llama a la nueva función toggleMostrarDatos
     btnVerOcultarDatos.addEventListener('click', toggleMostrarDatos); 
     btnLimpiarFormulario.addEventListener('click', () => limpiarFormulario(true)); 
     btnBorrarDatos.addEventListener('click', borrarDatos);
 });
-
-//44//
