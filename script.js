@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
         } else {
             // ALERTA RESTAURADA: Cuando la validación falla
-            // alert('❌ Por favor, corrige los errores en el formulario.'); // Línea ELIMINADA
+            alert('❌ Por favor, corrige los errores en el formulario.'); 
         }
     };
 
