@@ -9,18 +9,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const errorEdad = document.getElementById('error-edad');
 
     const btnGuardar = document.getElementById('btnGuardar');
-    const btnVerDatos = document.getElementById('btnVerDatos');
+    const btnVerOcultarDatos = document.getElementById('btnVerDatos'); 
     const btnLimpiarFormulario = document.getElementById('btnLimpiarFormulario');
     const btnBorrarDatos = document.getElementById('btnBorrarDatos');
 
-    const seccionResultado = document.querySelector('.resultado'); // La sección completa de resultados
-    const resNombre = document.getElementById('res-nombre');
-    const resEmail = document.getElementById('res-email');
-    const resEdad = document.getElementById('res-edad');
+    const seccionResultado = document.querySelector('.resultado'); 
+    const listaUsuariosContenedor = document.getElementById('lista-usuarios-contenedor'); 
+    
 
     // 2. Funciones de Validación
     
-    // Función de validación de Email simple
     const validarEmail = (email) => {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return re.test(String(email).toLowerCase());
@@ -29,18 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const validarCampos = () => {
         let esValido = true;
         
-        // Limpiar errores previos
         errorNombre.textContent = '';
         errorEmail.textContent = '';
         errorEdad.textContent = '';
 
-        // Validar Nombre
         if (inputNombre.value.trim() === '') {
             errorNombre.textContent = 'El nombre es obligatorio.';
             esValido = false;
         }
 
-        // Validar Email
         if (inputEmail.value.trim() === '') {
             errorEmail.textContent = 'El email es obligatorio.';
             esValido = false;
@@ -49,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
             esValido = false;
         }
 
-        // Validar Edad
         const edad = parseInt(inputEdad.value.trim());
         if (isNaN(edad) || edad <= 0) {
             errorEdad.textContent = 'La edad es obligatoria y debe ser un número positivo.';
@@ -62,73 +56,198 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Funciones de LocalStorage y Lógica
     
     const guardarDatos = () => {
-        // Ocultar la sección de resultados si está visible
-        seccionResultado.classList.add('hidden'); 
+        
+        const valido = validarCampos();
 
-        if (validarCampos()) {
-            const usuario = {
+        if (valido) {
+            const nuevoUsuario = {
                 nombre: inputNombre.value.trim(),
-                email: inputEmail.value.trim(),
+                email: inputEmail.value.trim(), // Usamos el email como identificador único
                 edad: parseInt(inputEdad.value.trim())
             };
 
-            localStorage.setItem('usuarioData', JSON.stringify(usuario));
+            let listaUsuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
             
-            alert('✅ Datos guardados correctamente en LocalStorage.');
-            limpiarFormulario();
-            // No llamar a mostrarDatos aquí, solo se mostrará al hacer clic en "Ver Datos"
+            // Buscar si el usuario ya existe por su email
+            const indiceExistente = listaUsuarios.findIndex(
+                usuario => usuario.email === nuevoUsuario.email
+            );
+            
+            if (indiceExistente !== -1) {
+                // 1. USUARIO EXISTE: Actualizar datos (Silencioso)
+                listaUsuarios[indiceExistente] = nuevoUsuario;
+            } else {
+                // 2. USUARIO NO EXISTE: Añadir nuevo (Silencioso)
+                listaUsuarios.push(nuevoUsuario);
+            }
+
+            // Guardar la lista actualizada en LocalStorage
+            localStorage.setItem("usuarios", JSON.stringify(listaUsuarios));
+            
+            limpiarFormulario(false); // Limpieza silenciosa
+            
+            // 3. Refrescar la lista si está visible
+            if (!seccionResultado.classList.contains('hidden')) {
+                // Forzamos un ciclo de 'refresh': Ocultar y luego Mostrar de nuevo
+                seccionResultado.classList.add('hidden'); 
+                btnVerOcultarDatos.textContent = 'Ver Datos'; 
+                
+                setTimeout(() => {
+                    toggleMostrarDatos();
+                }, 10);
+            }
+            
         } else {
-            alert('❌ Por favor, corrige los errores en el formulario.');
+            // ALERTA RESTAURADA: Cuando la validación falla
+            // alert('❌ Por favor, corrige los errores en el formulario.'); // Línea ELIMINADA
         }
     };
 
-    const mostrarDatos = () => {
-        const dataString = localStorage.getItem('usuarioData');
+    const borrarUsuarioIndividual = (index) => {
+        const dataString = localStorage.getItem('usuarios');
+        if (!dataString) return;
+
+        let listaUsuarios = JSON.parse(dataString);
+        
+        if (index >= 0 && index < listaUsuarios.length) {
+            const nombreUsuario = listaUsuarios[index].nombre;
+            
+            // Eliminar el usuario en la posición 'index'
+            listaUsuarios.splice(index, 1);
+            
+            // Guardar la nueva lista en LocalStorage
+            localStorage.setItem("usuarios", JSON.stringify(listaUsuarios));
+            
+            // Operación de borrado individual: Silenciosa
+            
+            setTimeout(() => {
+                // Llama a toggleMostrarDatos() para re-renderizar la lista y ajustar el texto del botón.
+                toggleMostrarDatos(); 
+            }, 10); 
+        }
+    };
+
+    const toggleMostrarDatos = () => {
+        // >>>>> BLOQUE DE OCULTAR (Si ya está visible) <<<<<
+        if (!seccionResultado.classList.contains('hidden')) {
+            seccionResultado.classList.add('hidden');
+            btnVerOcultarDatos.textContent = 'Ver Datos'; // Cambiar a 'Ver Datos'
+            return;
+        }
+
+        // >>>>> BLOQUE DE MOSTRAR (Si está oculto) <<<<<
+        const dataString = localStorage.getItem('usuarios'); 
+        listaUsuariosContenedor.innerHTML = ''; 
 
         if (dataString) {
-            const usuario = JSON.parse(dataString);
+            const listaUsuarios = JSON.parse(dataString);
 
-            resNombre.textContent = usuario.nombre || 'N/A';
-            resEmail.textContent = usuario.email || 'N/A';
-            resEdad.textContent = usuario.edad || 'N/A';
-            
-            seccionResultado.classList.remove('hidden'); // Mostrar la sección de resultados
-            alert('Datos tomados del LocalStorage y mostrados.');
+            if (listaUsuarios.length > 0) {
+                let htmlResultado = '';
+                
+                listaUsuarios.forEach((usuario, index) => {
+                    const numeroUsuario = index + 1;
+                    
+                    htmlResultado += `
+                        <div class="usuario-item">
+                            <h4>Usuario #${numeroUsuario}</h4>
+                            <p><strong>Nombre:</strong> <span>${usuario.nombre}</span></p>
+                            <p><strong>Email:</strong> <span>${usuario.email}</span></p>
+                            <p><strong>Edad:</strong> <span>${usuario.edad}</span></p>
+                            <button class="btn-borrar-usuario" data-index="${index}">Borrar Usuario</button>
+                        </div>
+                        <hr>
+                    `;
+                });
+                
+                listaUsuariosContenedor.innerHTML = htmlResultado;
+                seccionResultado.classList.remove('hidden'); 
+                btnVerOcultarDatos.textContent = 'Ocultar Datos'; // Cambiar a 'Ocultar Datos'
+                
+                // Asignar eventos a los botones de borrado individual
+                document.querySelectorAll('.btn-borrar-usuario').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const indexToDelete = parseInt(e.target.dataset.index);
+                        borrarUsuarioIndividual(indexToDelete);
+                    });
+                });
+                
+            } else {
+                seccionResultado.classList.add('hidden'); 
+                btnVerOcultarDatos.textContent = 'Ver Datos';
+                // ALERTA RESTAURADA: Cuando la lista está vacía
+                alert('La lista de usuarios está vacía.'); 
+            }
         } else {
-            resNombre.textContent = 'No hay datos guardados';
-            resEmail.textContent = 'No hay datos guardados';
-            resEdad.textContent = 'No hay datos guardados';
-            seccionResultado.classList.remove('hidden'); // Mostrar la sección con el mensaje de "No hay datos"
-            alert('No se encontraron datos de usuario en LocalStorage.');
+            seccionResultado.classList.add('hidden'); 
+            btnVerOcultarDatos.textContent = 'Ver Datos';
+            // ALERTA RESTAURADA: Cuando no hay datos en LocalStorage
+            alert('No se encontró la lista de usuarios en LocalStorage.'); 
         }
     };
 
-    const limpiarFormulario = () => {
+    const limpiarFormulario = (mostrarAlerta = true) => {
+        let debeLimpiar = false;
+        
+        // 1. Verificar si hay algo que limpiar (si se llama desde el botón)
+        if (mostrarAlerta) {
+            const nombreVacio = inputNombre.value.trim() === '';
+            const emailVacio = inputEmail.value.trim() === '';
+            const edadVacia = inputEdad.value.trim() === '';
+    
+            const erroresVacios = 
+                errorNombre.textContent === '' && 
+                errorEmail.textContent === '' && 
+                errorEdad.textContent === '';
+            
+            debeLimpiar = !(nombreVacio && emailVacio && edadVacia && erroresVacios);
+    
+            if (!debeLimpiar) {
+                // ALERTA RESTAURADA: Cuando no hay nada que limpiar
+                alert('❕ No hay nada para limpiar.'); 
+                return;
+            }
+        } else {
+            // Si se llama desde guardarDatos, siempre limpiamos (debeLimpiar = true)
+            debeLimpiar = true;
+        }
+
+        // 2. Proceder a la limpieza
         inputNombre.value = '';
         inputEmail.value = '';
         inputEdad.value = '';
         errorNombre.textContent = '';
         errorEmail.textContent = '';
         errorEdad.textContent = '';
+        
+        // 3. Mostrar alerta solo si se solicitó (y si realmente había algo que limpiar)
+        if (mostrarAlerta && debeLimpiar) {
+            // Limpieza del formulario: Silenciosa
+        }
     };
 
     const borrarDatos = () => {
-        localStorage.removeItem('usuarioData');
-        
-        // Limpiar la sección de resultados y ocultarla
-        resNombre.textContent = '';
-        resEmail.textContent = '';
-        resEdad.textContent = '';
-        seccionResultado.classList.add('hidden'); // Ocultar la sección
+        // Ocultar la sección de resultados inmediatamente
+        listaUsuariosContenedor.innerHTML = ''; 
+        seccionResultado.classList.add('hidden'); 
+        btnVerOcultarDatos.textContent = 'Ver Datos'; // Resetear el botón
 
-        alert('🗑️ Datos borrados de LocalStorage.');
+        const dataString = localStorage.getItem('usuarios');
+    
+        if (!dataString || JSON.parse(dataString).length === 0) {
+            // ALERTA RESTAURADA: Cuando no hay datos para borrar
+            alert('❌ No hay datos para borrar.'); 
+            return; 
+        }
+        
+        // Si hay datos, procede a borrar
+        localStorage.removeItem('usuarios'); 
+        // Borrado total de datos: Silencioso
     };
 
     // 4. Asignación de Eventos
     btnGuardar.addEventListener('click', guardarDatos);
-    btnVerDatos.addEventListener('click', mostrarDatos);
-    btnLimpiarFormulario.addEventListener('click', limpiarFormulario);
+    btnVerOcultarDatos.addEventListener('click', toggleMostrarDatos); 
+    btnLimpiarFormulario.addEventListener('click', () => limpiarFormulario(true)); 
     btnBorrarDatos.addEventListener('click', borrarDatos);
-
-    // No se llama a mostrarDatos() al inicio para que no se muestre por defecto.
 });
